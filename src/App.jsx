@@ -73,6 +73,13 @@ function App() {
       }
   };
 
+  const handleClearCache = () => {
+      if (window.confirm('CẢNH BÁO: Hành động này sẽ xóa toàn bộ lịch sử trận đấu, sơ đồ giải đấu và các thiết lập hiện tại. Bạn có chắc chắn muốn xóa tất cả?')) {
+          localStorage.clear();
+          window.location.reload();
+      }
+  };
+
   // --- TOURNAMENT BRACKET SCREEN ---
   // Priority: If a tournament is active (bracket or finish), show it.
   if (tournament.status === 'BRACKET' || tournament.status === 'FINISHED' || tournament.status === 'MATCH_ACTIVE') {
@@ -211,6 +218,12 @@ function App() {
                         </div>
                     </>
                 )}
+            </div>
+
+            <div className="setup-footer-extra">
+                <button onClick={handleClearCache} className="btn-clear-cache">
+                    XÓA TẤT CẢ DỮ LIỆU
+                </button>
             </div>
           </div>
         )}

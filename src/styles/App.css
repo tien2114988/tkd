@@ -1173,3 +1173,29 @@
     font-style: italic;
     padding: 2rem;
 }
+
+.setup-footer-extra {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(0,0,0,0.05);
+    display: flex;
+    justify-content: center;
+}
+
+.btn-clear-cache {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.2s;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+}
+
+.btn-clear-cache:hover {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.05);
+}
