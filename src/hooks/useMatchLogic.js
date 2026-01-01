@@ -61,16 +61,27 @@ export const useMatchLogic = () => {
 
   const endRoundCallback = useCallback((forcedWinner = null) => {
     setState(currentState => {
-        if (currentState.status !== 'FIGHT') return currentState;
+        // Guard 1: Only process if in a valid fighter/picker state
+        if (currentState.status !== 'FIGHT' && currentState.status !== 'PICK_WINNER') return currentState;
+
+        // Guard 2: Prevent double-processing of the same round (e.g. point gap + timer collisions)
+        if (currentState.roundScores.length >= currentState.currentRound) return currentState;
 
         let roundWinner = forcedWinner;
     
         if (!roundWinner) {
           if (currentState.redScore > currentState.blueScore) roundWinner = 'red';
           else if (currentState.blueScore > currentState.redScore) roundWinner = 'blue';
-          else roundWinner = 'draw';
         }
     
+        if (!roundWinner) {
+            return {
+                ...currentState,
+                status: 'PICK_WINNER',
+                isPaused: true
+            };
+        }
+
         const nextRedWins = roundWinner === 'red' ? currentState.roundsWonRed + 1 : currentState.roundsWonRed;
         const nextBlueWins = roundWinner === 'blue' ? currentState.roundsWonBlue + 1 : currentState.roundsWonBlue;
     
@@ -82,27 +93,26 @@ export const useMatchLogic = () => {
           ...currentState,
           roundsWonRed: nextRedWins,
           roundsWonBlue: nextBlueWins,
-          isPaused: true, // Ensure paused
-          undoStack: [] // Clear undo stack on round end
+          isPaused: true, 
+          undoStack: [] 
         };
     
         if (matchWinner) {
             newState.status = 'MATCH_END';
             newState.winner = matchWinner;
             
-            // Capture scores for the final round too
             const finalRoundScore = { round: currentState.currentRound, red: currentState.redScore, blue: currentState.blueScore };
             const fullRoundScores = [...currentState.roundScores, finalRoundScore];
             newState.roundScores = fullRoundScores;
 
             const historyItem = {
-                id: Date.now(),
+                id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
                 date: new Date().toISOString(),
                 redPlayer: currentState.redPlayer,
                 bluePlayer: currentState.bluePlayer,
                 winner: matchWinner,
                 score: `${nextRedWins}-${nextBlueWins}`,
-                roundScores: fullRoundScores // Persist per-round scores
+                roundScores: fullRoundScores
             };
             newState.matchHistory = [historyItem, ...currentState.matchHistory];
         } else {
@@ -296,6 +306,7 @@ export const useMatchLogic = () => {
     nextRound,
     resetMatch,
     newMatch,
-    resetTimer
+    resetTimer,
+    resolveDraw: (winner) => endRoundCallback(winner)
   };
 };

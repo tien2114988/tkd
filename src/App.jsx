@@ -17,7 +17,8 @@ function App() {
     nextRound, 
     resetMatch, 
     newMatch, 
-    resetTimer
+    resetTimer,
+    resolveDraw
   } = useMatchLogic();
   
   // Local state for setup form
@@ -199,28 +200,34 @@ function App() {
           </button>
       </footer>
 
-      {/* Overlays / Modals */}
-      {(isRoundEnd || isMatchEnd) && (
+      {/* End Match Modal */}
+      {isMatchEnd && (
+         <div className="overlay-backdrop">
+           <div className="modal-content">
+              <h2 className="winner-text">{state.winner.toUpperCase() === 'RED' ? 'ĐỎ' : 'XANH'} CHIẾN THẮNG!</h2>
+              <div className="setup-actions">
+                 <button onClick={newMatch} className="btn-primary-large">TRẬN MỚI</button>
+                 <button onClick={resetMatch} className="btn-secondary">Đấu lại</button>
+              </div>
+           </div>
+         </div>
+      )}
+
+      {/* Draw Resolution Modal */}
+      {state.status === 'PICK_WINNER' && (
+          <DrawResolutionModal onSelect={resolveDraw} />
+      )}
+
+      {/* Round End Modal (only if NOT picking winner) */}
+      {isRoundEnd && (
         <div className="overlay-backdrop">
           <div className="modal-content">
-            {isMatchEnd ? (
-               <>
-                 <h2 className="winner-text">{state.winner.toUpperCase() === 'RED' ? 'ĐỎ' : 'XANH'} CHIẾN THẮNG!</h2>
-                 <div className="setup-actions">
-                    <button onClick={resetMatch} className="btn-primary-large">ĐẤU LẠI</button>
-                    <button onClick={newMatch} className="btn-ghost">Trận mới</button>
-                 </div>
-               </>
-            ) : (
-                <>
-                 <h2 className="winner-text" style={{ fontSize: '2rem' }}>
-                    {state.roundWinner === 'draw' ? 'HÒA' : `${state.roundWinner.toUpperCase() === 'RED' ? 'ĐỎ' : 'XANH'} THẮNG HIỆP ${state.currentRound}`}
-                 </h2>
-                 <div className="setup-actions">
-                    <button onClick={nextRound} className="btn-primary-large">HIỆP TIẾP THEO</button>
-                 </div>
-               </>
-            )}
+             <h2 className="winner-text" style={{ fontSize: '2rem' }}>
+                {state.roundWinner === 'draw' ? 'HÒA' : `${state.roundWinner.toUpperCase() === 'RED' ? 'ĐỎ' : 'XANH'} THẮNG HIỆP ${state.currentRound}`}
+             </h2>
+             <div className="setup-actions">
+                <button onClick={nextRound} className="btn-primary-large">HIỆP TIẾP THEO</button>
+             </div>
           </div>
         </div>
       )}
@@ -232,6 +239,21 @@ function formatTime(seconds) {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
     return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+const DrawResolutionModal = ({ onSelect }) => {
+    return (
+        <div className="overlay-backdrop">
+            <div className="modal-content animate-enter">
+                <h2 className="modal-title">Kết quả hòa</h2>
+                <p className="modal-subtitle">Trọng tài vui lòng chọn người thắng hiệp này:</p>
+                <div className="draw-actions">
+                    <button className="btn-resolve card-red" onClick={() => onSelect('red')}>VĐV ĐỎ</button>
+                    <button className="btn-resolve card-blue" onClick={() => onSelect('blue')}>VĐV XANH</button>
+                </div>
+            </div>
+        </div>
+    )
 }
 
 const HistoryView = ({ history, onClose, onDelete }) => {
