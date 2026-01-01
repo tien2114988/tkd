@@ -28,7 +28,9 @@ const INITIAL_STATE = {
   
   roundScores: [], // Array of { round: 1, red: 5, blue: 3 }
   
-  matchHistory: [] // Array of past match results
+  matchHistory: [], // Array of past match results
+  matchId: null,    // Unique ID for current session to track resolution
+  matchType: 'single' // 'single' or 'tournament'
 };
 
 export const useMatchLogic = () => {
@@ -36,11 +38,14 @@ export const useMatchLogic = () => {
     const saved = localStorage.getItem(STORAGE_KEY);
     const parsed = saved ? JSON.parse(saved) : INITIAL_STATE;
     
+    if (!parsed.matchHistory) parsed.matchHistory = [];
+    
     // Backfill missing IDs in history to ensure stable keys
-    if (parsed.matchHistory && parsed.matchHistory.length > 0) {
+    if (parsed.matchHistory.length > 0) {
         parsed.matchHistory = parsed.matchHistory.map((item, index) => ({
             ...item,
-            id: item.id || Date.now() + index 
+            id: item.id || Date.now() + index,
+            matchType: item.matchType || 'single'
         }));
     }
     
@@ -112,7 +117,8 @@ export const useMatchLogic = () => {
                 bluePlayer: currentState.bluePlayer,
                 winner: matchWinner,
                 score: `${nextRedWins}-${nextBlueWins}`,
-                roundScores: fullRoundScores
+                roundScores: fullRoundScores,
+                matchType: currentState.matchType || 'single'
             };
             newState.matchHistory = [historyItem, ...currentState.matchHistory];
         } else {
@@ -137,7 +143,6 @@ export const useMatchLogic = () => {
         if (timeLeftRef.current <= 1) {
             clearInterval(timerInterval.current);
             // Time is up: Ensure visual matches and trigger round end
-            // We use a functional update to ensure atomic/queued updates if needed, though with React 18+ batching this writes sequentially.
             setState(prev => ({ ...prev, timeLeft: 0 }));
             endRoundCallback();
         } else {
@@ -150,7 +155,7 @@ export const useMatchLogic = () => {
 
     return () => clearInterval(timerInterval.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.status, state.isPaused, endRoundCallback]); // timeLeft removed from deps to prevent interval recreation
+  }, [state.status, state.isPaused, state.roundDuration, endRoundCallback]);
 
   // Point Gap Rule (20 points difference ends round)
   useEffect(() => {
@@ -166,9 +171,10 @@ export const useMatchLogic = () => {
     setState(prev => ({ ...prev, ...updates }));
   };
 
-  const startMatch = (redName, blueName, duration = 60) => {
+  const startMatch = (redName, blueName, duration = 60, matchType = 'single') => {
     updateState({
       status: 'FIGHT',
+      matchId: `${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
       redPlayer: redName || 'VĐV Đỏ',
       bluePlayer: blueName || 'VĐV Xanh',
       roundDuration: Number(duration),
@@ -182,7 +188,8 @@ export const useMatchLogic = () => {
       undoStack: [],
       roundsWonRed: 0,
       roundsWonBlue: 0,
-      roundScores: []
+      roundScores: [],
+      matchType: matchType
     });
   };
 
@@ -209,30 +216,29 @@ export const useMatchLogic = () => {
           redFaults: prevState.redFaults,
           blueFaults: prevState.blueFaults
       };
-      // Keep only last 20 actions to prevent memory bloat (though negligible here)
+      // Keep only last 20 actions to prevent memory bloat
       const newStack = [...(prevState.undoStack || []), snapshot].slice(-20);
       return newStack;
   };
 
   const addPoints = (player, points) => {
     if (state.status !== 'FIGHT') return;
-    // Allowed when paused checks removed
 
-    setState(prev => ({
-        ...prev,
-        undoStack: pushToUndoStack(prev),
-        redScore: player === 'red' ? prev.redScore + points : prev.redScore,
-        blueScore: player === 'blue' ? prev.blueScore + points : prev.blueScore
-    }));
+    setState(prev => {
+        const newRedScore = player === 'red' ? prev.redScore + points : prev.redScore;
+        const newBlueScore = player === 'blue' ? prev.blueScore + points : prev.blueScore;
+        
+        return {
+            ...prev,
+            undoStack: pushToUndoStack(prev),
+            redScore: newRedScore,
+            blueScore: newBlueScore
+        };
+    });
   };
 
   const addFault = (player) => {
     if (state.status !== 'FIGHT') return;
-    // Allowed when paused checks removed
-    
-    // Potentially critical logic where fault ends match, might not be undoable easily if it triggered endRound?
-    // If fault causes loss, 'endRound' is called. We should probably NOT allow undoing a match end easily here without more complex state.
-    // For now, if it ends round, undo stack is lost (as per endRound logic). This is acceptable for V1.
     
     // Check if fault causes end first
     if (player === 'red' && state.redFaults + 1 >= 5) {
@@ -286,11 +292,11 @@ export const useMatchLogic = () => {
   };
   
   const resetMatch = () => {
-      startMatch(state.redPlayer, state.bluePlayer, state.roundDuration);
+      startMatch(state.redPlayer, state.bluePlayer, state.roundDuration, state.matchType);
   };
   
   const newMatch = () => {
-      updateState({ status: 'SETUP' });
+      updateState({ status: 'SETUP', matchType: 'single' });
   }
 
   return {

@@ -17,19 +17,19 @@
 /* --- SETUP SCREEN --- */
 .setup-mode {
   align-items: center;
-  justify-content: center;
-  padding: 1rem;
+  justify-content: flex-start; /* Start from top to prevent clipping when content is tall */
+  padding: 2rem 1rem;
+  overflow-y: auto;
 }
 
 .setup-card {
   width: 100%;
   max-width: 800px; 
-  max-height: 85vh; /* Limit height for internal scrolling */
-  overflow: hidden; /* Contain children */
+  min-height: fit-content;
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  padding: 1.5rem; /* Reduced padding for mobile */
+  padding: 1.25rem; 
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-xl);
   border: 1px solid rgba(255,255,255,0.6);
@@ -39,13 +39,13 @@
 }
 
 @media (min-width: 768px) {
-  .setup-card { padding: 2rem 2.5rem; }
+  .setup-card { padding: 1.5rem 2rem; }
 }
 
 .title {
-  font-size: clamp(1.5rem, 5vw, 2.25rem); /* Responsive title */
+  font-size: clamp(1.2rem, 4vw, 1.75rem); /* Smaller title */
   text-align: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.75rem;
   background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
   -webkit-background-clip: text;
   background-clip: text;
@@ -123,11 +123,23 @@
   opacity: 0.5;
 }
 
+.mode-toggle {
+  margin-bottom: 1rem;
+}
+
+.setup-scroll-area {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
 .setup-actions {
-  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(0,0,0,0.05);
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  flex-shrink: 0;
 }
 
 .btn-primary-large {
@@ -184,12 +196,12 @@
 
 .setup-fighter-card {
   flex: 1;
-  padding: 1.5rem;
-  border-radius: var(--radius-xl);
+  padding: 1rem;
+  border-radius: var(--radius-lg);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
+  gap: 0.5rem;
   transition: transform 0.2s;
 }
 
@@ -222,7 +234,8 @@
 }
 
 .input-transparent {
-  width: 100%;
+  flex: 1; /* Allow to grow/shrink in flex containers */
+  min-width: 0; /* Important for flex-shrink */
   background: rgba(255,255,255,0.6);
   border: none;
   border-radius: var(--radius-lg);
@@ -253,9 +266,9 @@
   flex-direction: column;
   align-items: center;
   gap: 0.25rem;
-  margin-top: 0.5rem;
-  padding-top: 0.5rem;
-  border-top: 1px solid #e5e7eb;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(0,0,0,0.05);
 }
 
 .input-time {
@@ -666,6 +679,16 @@
   text-align: center;
 }
 
+.setup-actions-row {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+}
+
+.setup-actions-row .btn-secondary {
+  flex: 1;
+}
+
 .history-list {
   flex: 1;
   overflow-y: auto;
@@ -836,4 +859,211 @@
   color: var(--color-text);
   transform: translateY(-1px);
 }
-/* Removed old .score-stack, .round-details, .round-pill as they are replaced */
+.section-subtitle {
+  font-size: 1rem;
+  font-weight: 700;
+  text-align: center;
+  color: var(--color-text-secondary);
+  margin-bottom: 1rem;
+}
+
+.setup-actions-internal {
+  margin-top: 1rem;
+}
+
+.hint-text {
+  font-size: 0.8rem;
+  color: var(--color-text-tertiary);
+  text-align: center;
+  margin: -1rem 0 1.5rem 0;
+  font-style: italic;
+}
+
+/* --- TOURNAMENT --- */
+.athlete-input-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  align-items: stretch;
+}
+
+.btn-add-athlete {
+  background: var(--color-text);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-lg);
+  font-weight: 700;
+  white-space: nowrap;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+}
+
+.btn-add-athlete:hover {
+  background: #000;
+  transform: scale(1.05);
+}
+
+.athlete-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.75rem;
+  max-height: 250px;
+  overflow-y: auto;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: rgba(0,0,0,0.03);
+  border-radius: var(--radius-lg);
+}
+
+.athlete-item {
+  background: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-md);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: var(--shadow-sm);
+  font-weight: 600;
+}
+
+.btn-remove {
+  color: #ef4444;
+  font-weight: 800;
+  padding: 0.25rem;
+}
+
+/* Bracket */
+.bracket-container {
+  display: flex;
+  gap: 2rem;
+  overflow-x: auto;
+  padding: 2rem 1rem;
+  flex: 1;
+  min-height: 400px;
+}
+
+.bracket-round {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  min-width: 200px;
+}
+
+.round-header {
+  text-align: center;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+  margin-bottom: 1rem;
+}
+
+.round-matches {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  flex: 1;
+}
+
+.bracket-match {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: var(--shadow-sm);
+}
+
+.bracket-match:hover {
+  transform: scale(1.02);
+  border-color: var(--color-primary);
+}
+
+.bracket-match.status-DONE {
+  opacity: 1;
+  border-color: #10b981;
+}
+
+.p-box {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.p-box.is-winner {
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+}
+
+.bracket-match.status-DONE[class*="R0B"] {
+  opacity: 0.7;
+  cursor: default;
+  pointer-events: none;
+  background: #f9fafb;
+}
+
+.match-vs {
+  font-size: 0.7rem;
+  background: #f3f4f6;
+  text-align: center;
+  color: #9ca3af;
+  padding: 2px 0;
+}
+
+.match-result-score {
+  font-weight: 800;
+  color: var(--color-primary);
+  font-family: var(--font-display);
+  letter-spacing: 1px;
+}
+
+.tournament-winner-banner {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+  padding: 1rem;
+  border-radius: var(--radius-lg);
+  margin-bottom: 1.25rem;
+  text-align: center;
+  font-size: 1.25rem;
+  box-shadow: var(--shadow-lg);
+}
+
+.mode-toggle {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.btn-mode-tab {
+  padding: 0.5rem 1.5rem;
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  background: rgba(0,0,0,0.05);
+  color: var(--color-text-secondary);
+}
+
+.btn-mode-tab.active {
+  background: var(--color-text);
+  color: white;
+}
+
+
+.tournament-record {
+  border-left: 4px solid #f59e0b;
+}
+
+.tournament-result {
+  margin-top: 0.5rem;
+  font-size: 1.1rem;
+  color: #d97706;
+}
+
+.bracket-summary {
+  margin-top: 0.25rem;
+  font-size: 0.85rem;
+  color: var(--color-text-tertiary);
+}
