@@ -3,11 +3,15 @@
     flex-direction: column;
     align-items: center;
     font-family: var(--font-display);
-    font-size: 3.5rem;
+    font-size: 2.5rem; /* Smaller default */
     font-weight: 800;
     line-height: 1;
     font-variant-numeric: tabular-nums;
     color: var(--color-text);
+}
+
+@media (min-width: 768px) {
+    .timer-display { font-size: 3.5rem; }
 }
 
 .timer-warning {
@@ -29,9 +33,9 @@
 }
 
 .btn-timer-control {
-    font-size: 1.5rem;
-    width: 3rem;
-    height: 3rem;
+    font-size: 1.25rem;
+    width: 2.5rem;
+    height: 2.5rem;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -39,6 +43,14 @@
     transition: all 0.2s;
     background: #e5e7eb;
     color: var(--color-text);
+}
+
+@media (min-width: 768px) {
+    .btn-timer-control {
+        font-size: 1.5rem;
+        width: 3rem;
+        height: 3rem;
+    }
 }
 
 .btn-timer-control.running {

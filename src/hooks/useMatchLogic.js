@@ -26,6 +26,8 @@ const INITIAL_STATE = {
   roundsWonRed: 0,
   roundsWonBlue: 0,
   
+  roundScores: [], // Array of { round: 1, red: 5, blue: 3 }
+  
   matchHistory: [] // Array of past match results
 };
 
@@ -87,18 +89,31 @@ export const useMatchLogic = () => {
         if (matchWinner) {
             newState.status = 'MATCH_END';
             newState.winner = matchWinner;
+            
+            // Capture scores for the final round too
+            const finalRoundScore = { round: currentState.currentRound, red: currentState.redScore, blue: currentState.blueScore };
+            const fullRoundScores = [...currentState.roundScores, finalRoundScore];
+            newState.roundScores = fullRoundScores;
+
             const historyItem = {
                 id: Date.now(),
                 date: new Date().toISOString(),
                 redPlayer: currentState.redPlayer,
                 bluePlayer: currentState.bluePlayer,
                 winner: matchWinner,
-                score: `${nextRedWins}-${nextBlueWins}`
+                score: `${nextRedWins}-${nextBlueWins}`,
+                roundScores: fullRoundScores // Persist per-round scores
             };
             newState.matchHistory = [historyItem, ...currentState.matchHistory];
         } else {
             newState.status = 'ROUND_END';
             newState.roundWinner = roundWinner;
+            
+            // Save this round's score
+            newState.roundScores = [
+                ...currentState.roundScores, 
+                { round: currentState.currentRound, red: currentState.redScore, blue: currentState.blueScore }
+            ];
         }
         
         return newState;
@@ -156,7 +171,8 @@ export const useMatchLogic = () => {
       blueFaults: 0,
       undoStack: [],
       roundsWonRed: 0,
-      roundsWonBlue: 0
+      roundsWonBlue: 0,
+      roundScores: []
     });
   };
 
@@ -190,7 +206,7 @@ export const useMatchLogic = () => {
 
   const addPoints = (player, points) => {
     if (state.status !== 'FIGHT') return;
-    if (state.isPaused) return; // Only score when timer is running
+    // Allowed when paused checks removed
 
     setState(prev => ({
         ...prev,
@@ -202,7 +218,7 @@ export const useMatchLogic = () => {
 
   const addFault = (player) => {
     if (state.status !== 'FIGHT') return;
-    if (state.isPaused) return; // Only score when timer is running
+    // Allowed when paused checks removed
     
     // Potentially critical logic where fault ends match, might not be undoable easily if it triggered endRound?
     // If fault causes loss, 'endRound' is called. We should probably NOT allow undoing a match end easily here without more complex state.

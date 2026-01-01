@@ -21,8 +21,8 @@ function App() {
   } = useMatchLogic();
   
   // Local state for setup form
-  const [setupRed, setSetupRed] = useState('VĐV Đỏ');
-  const [setupBlue, setSetupBlue] = useState('VĐV Xanh');
+  const [setupRed, setSetupRed] = useState('');
+  const [setupBlue, setSetupBlue] = useState('');
   const [setupTime, setSetupTime] = useState(60);
   const [showHistory, setShowHistory] = useState(false);
 
@@ -40,44 +40,52 @@ function App() {
           <div className="setup-card animate-enter">
             <h1 className="title">Bảng Điểm Taekwondo</h1>
             
-            <div className="input-group group-red">
-              <label>VĐV Đỏ</label>
-              <input 
-                value={setupRed} 
-                onChange={(e) => setSetupRed(e.target.value)} 
-                className="input-field red-theme"
-                placeholder="Tên VĐV"
-              />
-            </div>
-            
-            <div className="vs-divider">VS</div>
-            
-            <div className="input-group group-blue">
-              <label>VĐV Xanh</label>
-              <input 
-                value={setupBlue} 
-                onChange={(e) => setSetupBlue(e.target.value)} 
-                className="input-field blue-theme"
-                placeholder="Tên VĐV"
-              />
+            <div className="setup-content-grid">
+                {/* Red Setup Card */}
+                <div className="setup-fighter-card card-red">
+                    <div className="card-icon">🔴</div>
+                    <label>VĐV Đỏ</label>
+                    <input 
+                        value={setupRed} 
+                        onChange={(e) => setSetupRed(e.target.value)} 
+                        className="input-transparent"
+                        placeholder="VĐV Đỏ"
+                    />
+                </div>
+
+                <div className="vs-badge-large">VS</div>
+
+                {/* Blue Setup Card */}
+                <div className="setup-fighter-card card-blue">
+                    <div className="card-icon">🔵</div>
+                    <label>VĐV Xanh</label>
+                    <input 
+                        value={setupBlue} 
+                        onChange={(e) => setSetupBlue(e.target.value)} 
+                        className="input-transparent"
+                        placeholder="VĐV Xanh"
+                    />
+                </div>
             </div>
 
-            <div className="input-group" style={{ marginTop: '0.5rem' }}>
+            <div className="time-setup-row">
               <label>Thời gian hiệp (s)</label>
               <input 
                 type="number"
                 value={setupTime} 
                 onChange={(e) => setSetupTime(e.target.value)} 
-                className="input-field"
+                className="input-time"
                 placeholder="60"
               />
             </div>
+
+
             
-            <div className="setup-actions">
+             <div className="setup-actions">
                 <button onClick={() => startMatch(setupRed, setupBlue, setupTime)} className="btn-primary-large">
                   BẮT ĐẦU
                 </button>
-                <button onClick={() => setShowHistory(true)} className="btn-ghost">
+                <button onClick={() => setShowHistory(true)} className="btn-secondary">
                   Lịch sử ({state.matchHistory.length})
                 </button>
             </div>
@@ -90,7 +98,8 @@ function App() {
   // --- MATCH SCREEN ---
   const isRoundEnd = state.status === 'ROUND_END';
   const isMatchEnd = state.status === 'MATCH_END';
-  const scoringDisabled = state.isPaused;
+  // Allow scoring even when paused, as long as we are in FIGHT mode
+  const scoringDisabled = state.status !== 'FIGHT';
 
   return (
     <div className="app-container match-mode">
@@ -228,41 +237,50 @@ function formatTime(seconds) {
 const HistoryView = ({ history, onClose, onDelete }) => {
     return (
         <div className="setup-card animate-enter">
-            <h2 style={{ marginBottom: '1rem' }}>Lịch sử trận đấu</h2>
-            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                {history.length === 0 && <p style={{ opacity: 0.5 }}>Chưa có trận đấu nào được ghi lại.</p>}
+            <h2 className="history-title">Lịch sử trận đấu</h2>
+            <div className="history-list">
+                {history.length === 0 && <p className="history-empty">Chưa có trận đấu nào được ghi lại.</p>}
                 {history.map((h) => (
-                    <div key={h.id} style={{ 
-                        padding: '1rem', 
-                        background: 'white', 
-                        borderRadius: '0.75rem', 
-                        border: '1px solid #e5e7eb',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center'
-                    }}>
-                        <div>
-                            <div style={{ fontSize: '0.8rem', color: '#6b7280' }}>
-                                {new Date(h.date).toLocaleDateString()}
+                    <div key={h.id} className={`history-item winner-${h.winner}`}>
+                        <div className="history-main-row">
+                            <div className="history-info">
+                                <div className="history-date">
+                                    {new Date(h.date).toLocaleDateString('vi-VN')}
+                                </div>
+                                <div className="history-players">
+                                    <span className="text-red">{h.redPlayer}</span>
+                                    <span className="vs-badge">vs</span>
+                                    <span className="text-blue">{h.bluePlayer}</span>
+                                </div>
                             </div>
-                            <div style={{ fontWeight: 600 }}>
-                                <span style={{ color: h.winner === 'red' ? '#ef4444' : 'inherit' }}>{h.redPlayer}</span>
-                                <span style={{ padding: '0 0.5rem', opacity: 0.5 }}>vs</span>
-                                <span style={{ color: h.winner === 'blue' ? '#3b82f6' : 'inherit' }}>{h.bluePlayer}</span>
+                            <div className="history-result-group">
+                                 <span className="history-score-large">{h.score}</span>
+                                 {onDelete && (
+                                    <button onClick={() => onDelete(h.id)} className="btn-delete-history">
+                                        🗑
+                                    </button>
+                                 )}
                             </div>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                             <span style={{ fontWeight: 900, fontSize: '1.25rem' }}>{h.score}</span>
-                             {onDelete && (
-                                <button onClick={() => onDelete(h.id)} style={{ color: '#ef4444', opacity: 0.7 }}>
-                                    🗑
-                                </button>
-                             )}
-                        </div>
+                        
+                        {h.roundScores && h.roundScores.length > 0 && (
+                            <div className="history-rounds-grid">
+                                {h.roundScores.map((r, idx) => (
+                                    <div key={idx} className="round-stat-card">
+                                        <div className="round-label">H{r.round}</div>
+                                        <div className="round-score-nums">
+                                            <span className="text-red">{r.red}</span>
+                                            <span className="score-divider">-</span>
+                                            <span className="text-blue">{r.blue}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 ))}
             </div>
-            <button onClick={onClose} className="btn-ghost" style={{ marginTop: '1rem' }}>Quay lại</button>
+            <button onClick={onClose} className="btn-back">Quay lại</button>
         </div>
     )
 }
