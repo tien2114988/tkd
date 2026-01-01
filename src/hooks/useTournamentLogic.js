@@ -137,7 +137,7 @@ export const useTournamentLogic = () => {
         return { red: match.player1.name, blue: match.player2.name };
     };
 
-    const resolveMatch = (winnerName, score) => {
+    const resolveMatch = (winnerName, score, roundScores = []) => {
         if (!tournament.currentMatch) return;
         const { roundIdx, matchIdx } = tournament.currentMatch;
         const winner = winnerName === 'red' ? tournament.rounds[roundIdx][matchIdx].player1 : tournament.rounds[roundIdx][matchIdx].player2;
@@ -151,6 +151,7 @@ export const useTournamentLogic = () => {
                 ...newRounds[roundIdx][matchIdx],
                 winner,
                 score,
+                roundScores,
                 status: 'DONE'
             };
 

@@ -1067,3 +1067,109 @@
   font-size: 0.85rem;
   color: var(--color-text-tertiary);
 }
+
+/* Match Detail Modal */
+.match-detail-modal {
+    max-width: 500px !important;
+}
+
+.detail-players-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8fafc;
+    padding: 1.5rem;
+    border-radius: var(--radius-lg);
+    margin-bottom: 2rem;
+    border: 1px solid #e2e8f0;
+}
+
+.detail-player {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.player-label {
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+}
+
+.detail-player.red .player-label { color: var(--color-red); }
+.detail-player.blue .player-label { color: var(--color-blue); }
+
+.player-name {
+    font-size: 1.25rem;
+    font-weight: 800;
+    font-family: var(--font-display);
+    text-align: center;
+}
+
+.detail-vs-score {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0 1rem;
+}
+
+.final-score-large {
+    font-size: 2.5rem;
+    font-weight: 900;
+    font-family: var(--font-display);
+    color: var(--color-primary);
+    line-height: 1;
+}
+
+.vs-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #94a3b8;
+}
+
+.detail-rounds-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+}
+
+.detail-round-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: var(--radius-md);
+    transition: transform 0.2s;
+}
+
+.detail-round-badge {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--color-text-secondary);
+}
+
+.detail-round-score {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 1.5rem;
+    font-weight: 800;
+    font-family: var(--font-display);
+}
+
+.score-num.red { color: var(--color-red); }
+.score-num.blue { color: var(--color-blue); }
+.score-dash { color: #cbd5e1; }
+
+.no-detail-text {
+    text-align: center;
+    color: #94a3b8;
+    font-style: italic;
+    padding: 2rem;
+}

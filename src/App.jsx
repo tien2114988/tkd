@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useMatchLogic } from './hooks/useMatchLogic';
 import { useTournamentLogic } from './hooks/useTournamentLogic';
-import { TournamentSetup, TournamentBracket } from './components/TournamentView';
+import { TournamentSetup, TournamentBracket, MatchDetailModal } from './components/TournamentView';
 import './styles/index.css';
 import './styles/App.css';
 import './styles/timer.css';
@@ -29,6 +29,7 @@ function App() {
   const [setupBlue, setSetupBlue] = useState('');
   const [setupTime, setSetupTime] = useState(60);
   const [showHistory, setShowHistory] = useState(false);
+  const [selectedMatchDetail, setSelectedMatchDetail] = useState(null);
 
   const {
       tournament,
@@ -51,16 +52,17 @@ function App() {
       if (state.status === 'MATCH_END' && state.matchType === 'tournament' && state.matchId && state.matchId !== lastResolvedMatchId.current) {
           lastResolvedMatchId.current = state.matchId;
           const score = `${state.roundsWonRed}-${state.roundsWonBlue}`;
+          const roundScores = state.roundScores || [];
           
           // Resolve in tournament logic
-          resolveMatch(state.winner, score);
+          resolveMatch(state.winner, score, roundScores);
           
           // Show bracket after a short delay for celebration
           setTimeout(() => {
               newMatch();
           }, 2000);
       }
-  }, [state.status, state.matchType, state.matchId, state.winner, state.roundsWonRed, state.roundsWonBlue, resolveMatch, newMatch]);
+  }, [state.status, state.matchType, state.matchId, state.winner, state.roundsWonRed, state.roundsWonBlue, state.roundScores, resolveMatch, newMatch]);
 
   const handleTournamentMatchSelect = (rIdx, mIdx) => {
       const matchData = startTournamentMatch(rIdx, mIdx);
@@ -84,7 +86,14 @@ function App() {
                     onMatchSelect={handleTournamentMatchSelect}
                     onReset={resetTournament}
                     winner={tournament.winner}
+                    onShowDetail={(match) => setSelectedMatchDetail(match)}
                   />
+                  {selectedMatchDetail && (
+                      <MatchDetailModal 
+                        match={selectedMatchDetail} 
+                        onClose={() => setSelectedMatchDetail(null)} 
+                      />
+                  )}
               </div>
           );
       }

@@ -42,7 +42,7 @@ export const TournamentSetup = ({ athletes, onAdd, onRemove }) => {
     );
 };
 
-export const TournamentBracket = ({ rounds, onMatchSelect, onReset, winner }) => {
+export const TournamentBracket = ({ rounds, onMatchSelect, onReset, winner, onShowDetail }) => {
     return (
         <div className="setup-card animate-enter bracket-view">
             <h2 className="title">Sơ đồ thi đấu</h2>
@@ -58,25 +58,36 @@ export const TournamentBracket = ({ rounds, onMatchSelect, onReset, winner }) =>
                     <div key={rIdx} className="bracket-round">
                         <h3 className="round-header">Vòng {rIdx + 1}</h3>
                         <div className="round-matches">
-                            {round.map((match, mIdx) => (
-                                <div 
-                                    key={match.id} 
-                                    className={`bracket-match status-${match.status}`}
-                                    onClick={() => onMatchSelect(rIdx, mIdx)}
-                                >
-                                    <div className={`p-box ${match.winner?.id === match.player1?.id ? 'is-winner' : ''}`}>
-                                        {match.player1?.name || (rIdx === 0 ? '---' : 'TBD')}
+                            {round.map((match, mIdx) => {
+                                const isBye = match.score === 'BYE';
+                                const isDone = match.status === 'DONE';
+
+                                return (
+                                    <div 
+                                        key={match.id} 
+                                        className={`bracket-match status-${match.status} ${isBye ? 'is-bye' : ''}`}
+                                        onClick={() => {
+                                            if (isDone) {
+                                                if (!isBye && onShowDetail) onShowDetail(match);
+                                            } else {
+                                                onMatchSelect(rIdx, mIdx);
+                                            }
+                                        }}
+                                    >
+                                        <div className={`p-box ${match.winner?.id === match.player1?.id && isDone ? 'is-winner' : ''}`}>
+                                            {match.player1?.name || (rIdx === 0 ? '---' : 'TBD')}
+                                        </div>
+                                        <div className="match-vs">
+                                            {isDone && match.score ? (
+                                                <span className="match-result-score">{match.score}</span>
+                                            ) : 'vs'}
+                                        </div>
+                                        <div className={`p-box ${match.winner?.id === match.player2?.id && isDone ? 'is-winner' : ''}`}>
+                                            {match.player2?.name || (rIdx === 0 ? '---' : 'TBD')}
+                                        </div>
                                     </div>
-                                    <div className="match-vs">
-                                        {match.status === 'DONE' && match.score ? (
-                                            <span className="match-result-score">{match.score}</span>
-                                        ) : 'vs'}
-                                    </div>
-                                    <div className={`p-box ${match.winner?.id === match.player2?.id ? 'is-winner' : ''}`}>
-                                        {match.player2?.name || (rIdx === 0 ? '---' : 'TBD')}
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
                 ))}
@@ -84,6 +95,54 @@ export const TournamentBracket = ({ rounds, onMatchSelect, onReset, winner }) =>
 
             <div className="setup-actions">
                 <button onClick={onReset} className="btn-secondary">HỦY GIẢI ĐẤU</button>
+            </div>
+        </div>
+    );
+};
+
+export const MatchDetailModal = ({ match, onClose }) => {
+    if (!match) return null;
+
+    return (
+        <div className="overlay-backdrop">
+            <div className="modal-content animate-enter match-detail-modal">
+                <h2 className="modal-title">Chi tiết trận đấu</h2>
+                
+                <div className="detail-players-header">
+                    <div className="detail-player red">
+                        <span className="player-label">ĐỎ</span>
+                        <span className="player-name">{match.player1?.name}</span>
+                    </div>
+                    <div className="detail-vs-score">
+                        <div className="final-score-large">{match.score}</div>
+                        <div className="vs-label">VS</div>
+                    </div>
+                    <div className="detail-player blue">
+                        <span className="player-label">XANH</span>
+                        <span className="player-name">{match.player2?.name}</span>
+                    </div>
+                </div>
+
+                <div className="detail-rounds-list">
+                    {match.roundScores && match.roundScores.length > 0 ? (
+                        match.roundScores.map((r, idx) => (
+                            <div key={idx} className="detail-round-row">
+                                <div className="detail-round-badge">HIỆP {r.round}</div>
+                                <div className="detail-round-score">
+                                    <span className="score-num red">{r.red}</span>
+                                    <span className="score-dash">-</span>
+                                    <span className="score-num blue">{r.blue}</span>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <p className="no-detail-text">Không có dữ liệu chi tiết hiệp đấu.</p>
+                    )}
+                </div>
+
+                <div className="setup-actions">
+                    <button onClick={onClose} className="btn-primary-large">ĐÓNG</button>
+                </div>
             </div>
         </div>
     );
